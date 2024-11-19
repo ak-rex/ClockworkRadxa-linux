@@ -7,7 +7,12 @@
 
 /dts-v1/;
 
-#include "rk3588s-rock-5c.dts"
+#include "rk3588s-rock-5a.dts"
+
+/ {
+	model = "Radxa ROCK 5A SPI";
+	compatible = "radxa,rock-5a-spi", "radxa,rock-5a", "rockchip,rk3588";
+};
 
 &sfc {
 	status = "okay";

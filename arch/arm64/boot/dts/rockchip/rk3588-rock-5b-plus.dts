@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright (c) 2023 Rockchip Electronics Co., Ltd.
- * Copyright (c) 2023 Radxa Limited
+ * Copyright (c) 2024 Rockchip Electronics Co., Ltd.
+ * Copyright (c) 2024 Radxa Computer (Shenzhen) Co., Ltd.
  *
  */
 
@@ -30,7 +30,7 @@
 		compatible = "pwm-fan";
 		#cooling-cells = <2>;
 		cooling-levels = <0 64 128 192 255>;
-		pwms = <&pwm1 0 10000 0>;
+		pwms = <&pwm1 0 60000 0>;
 	};
 
 	vcc12v_dcin: vcc12v-dcin {
@@ -845,8 +845,8 @@
 	status = "okay";
 	orientation-switch;
 	svid = <0xff01>;
-	sbu1-dc-gpios = <&gpio4 RK_PA6 GPIO_ACTIVE_HIGH>;
-	sbu2-dc-gpios = <&gpio4 RK_PA7 GPIO_ACTIVE_HIGH>;
+	sbu1-dc-gpios = <&gpio0 RK_PC4 GPIO_ACTIVE_HIGH>;
+	sbu2-dc-gpios = <&gpio0 RK_PC5 GPIO_ACTIVE_HIGH>;
 
 	port {
 		#address-cells = <1>;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright (c) 2024 Rockchip Electronics Co., Ltd.
- * Copyright (c) 2024 Radxa Limited
+ * Copyright (c) 2024 Radxa Computer (Shenzhen) Co., Ltd.
  *
  */
 
@@ -272,18 +272,16 @@
 	};
 
 	hdmiin-sound {
-		compatible = "simple-audio-card";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,name = "rockchip,hdmiin";
-		simple-audio-card,bitclock-master = <&dailink0_master>;
-		simple-audio-card,frame-master = <&dailink0_master>;
 		status = "okay";
-		simple-audio-card,cpu {
-			sound-dai = <&i2s7_8ch>;
-		};
-		dailink0_master: simple-audio-card,codec {
-			sound-dai = <&hdmiin_dc>;
-		};
+		compatible = "rockchip,hdmi";
+		rockchip,mclk-fs = <128>;
+		rockchip,format = "i2s";
+		rockchip,bitclock-master = <&hdmirx_ctrler>;
+		rockchip,frame-master = <&hdmirx_ctrler>;
+		rockchip,card-name = "rockchip,hdmiin";
+		rockchip,cpu = <&i2s7_8ch>;
+		rockchip,codec = <&hdmirx_ctrler 0>;
+		rockchip,jack-det;
 	};
 
 	gpio-leds {
@@ -627,7 +625,8 @@
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&hdmim0_tx1_cec &hdmim0_tx1_hpd &hdmim1_tx1_scl &hdmim1_tx1_sda>;
-        cec-enable = "true";
+	cec-enable = "true";
+	enable-gpios = <&gpio4 RK_PB1 GPIO_ACTIVE_HIGH>;
 };
 
 &hdmi1_in_vp0 {
@@ -656,6 +655,7 @@
 
 	pinctrl-0 = <&hdmim1_rx_cec &hdmim1_rx_hpdin &hdmim1_rx_scl &hdmim1_rx_sda &hdmirx_det>;
 	pinctrl-names = "default";
+	#sound-dai-cells = <1>;
 };
 
 &hdptxphy_hdmi0 {

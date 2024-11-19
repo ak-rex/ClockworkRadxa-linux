@@ -14,15 +14,13 @@
 #include <dt-bindings/display/drm_mipi_dsi.h>
 #include <dt-bindings/display/rockchip_vop.h>
 #include <dt-bindings/sensor-dev.h>
-#include "dt-bindings/usb/pd.h"
 #include "rk3588s.dtsi"
 #include "rk3588-rk806-single.dtsi"
 #include "rk3588-linux.dtsi"
 
 / {
-	compatible = "radxa,cm5", "rockchip,rk3588";
-
-	/delete-node/ chosen;
+	model = "Radxa NX5 Module";
+	compatible = "radxa,nx5-module", "rockchip,rk3588";
 
 	aliases {
 		mmc0 = &sdmmc;
@@ -30,14 +28,44 @@
 		mmc2 = &sdio;
 	};
 
-	gpio_leds: gpio-leds {
-		compatible = "gpio-leds";
-		pinctrl-names = "default";
+	/delete-node/ chosen;
 
-		status-led-blue {
-			gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;
+	vcc12v_dcin: vcc12v-dcin {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc12v_dcin";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <12000000>;
+		regulator-max-microvolt = <12000000>;
+	};
+
+	vcc5v0_sys: vcc5v0-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc5v0_sys";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		vin-supply = <&vcc12v_dcin>;
+	};
+
+	vcc_1v1_nldo_s3: vcc-1v1-nldo-s3 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_1v1_nldo_s3";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
+		vin-supply = <&vcc5v0_sys>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-0 = <&led0_en>;
+		pinctrl-names = "default";
+		user_led {
+			gpios = <&gpio3 RK_PC5 GPIO_ACTIVE_LOW>;
 			linux,default-trigger = "heartbeat";
-			default-state = "on";
 		};
 	};
 };
@@ -79,13 +107,6 @@
 		regulator-state-mem {
 			regulator-off-in-suspend;
 		};
-	};
-
-	eeprom:	at24c16@50 {
-		status = "okay";
-		compatible = "atmel,24c16";
-		reg = <0x50>;
-		pagesize = <16>;
 	};
 };
 
@@ -259,14 +280,6 @@
 	status = "okay";
 };
 
-&av1d {
-	status = "okay";
-};
-
-&av1d_mmu {
-	status = "okay";
-};
-
 &saradc {
 	status = "okay";
 	vref-supply = <&vcc_1v8_s0>;
@@ -276,21 +289,17 @@
 	status = "okay";
 };
 
-&hdmi0 {
-	status = "okay";
-        cec-enable = "true";
-};
-
 &sdhci {
+	vmmc-supply = <&vcc_3v3_s0>;
+	vqmmc-supply = <&vcc_1v8_s3>;
 	bus-width = <8>;
+	non-removable;
 	no-sdio;
 	no-sd;
-	non-removable;
-	max-frequency = <200000000>;
+	mmc-hs200-1_8v;
 	mmc-hs400-1_8v;
 	mmc-hs400-enhanced-strobe;
-	mmc-hs200-1_8v;
-	status = "okay";
+	max-frequency = <200000000>;
 };
 
 &mdio1 {
@@ -301,26 +310,44 @@
 };
 
 &gmac1 {
-	phy-mode = "rgmii";
+	status = "okay";
+	// Use rgmii-rxid mode to disable rx delay inside Soc
+	phy-mode = "rgmii-rxid";
 	clock_in_out = "output";
 
-	snps,reset-gpio = <&gpio3 RK_PB2 GPIO_ACTIVE_LOW>;
+	snps,reset-gpio = <&gpio0 RK_PD3 GPIO_ACTIVE_LOW>;
 	snps,reset-active-low;
 	// Reset time is 20ms, 100ms for rtl8211f
-	snps,reset-delays-us = <0 20000 100000>;
+	snps,reset-delays-us = <0 200000 100000>;
 
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac1_miim
-		     &gmac1_tx_bus2
-		     &gmac1_rx_bus2
-		     &gmac1_rgmii_clk
-		     &gmac1_rgmii_bus>;
+		&gmac1_tx_bus2
+		&gmac1_rx_bus2
+		&gmac1_rgmii_clk
+		&gmac1_rgmii_bus>;
 
-	tx_delay = <0x41>;
-	rx_delay = <0x3a>;
+	tx_delay = <0x43>;
+	//rx_delay = <0x3e>;
 
 	phy-handle = <&rgmii_phy1>;
+};
+
+&i2c4 {
 	status = "okay";
+	pinctrl-0 = <&i2c4m3_xfer>;
+
+	hym8563: hym8563@51 {
+		compatible = "haoyu,hym8563";
+		reg = <0x51>;
+		#clock-cells = <0>;
+		clock-frequency = <32768>;
+		clock-output-names = "hym8563";
+		pinctrl-names = "default";
+		pinctrl-0 = <&rtc_int>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <RK_PB0 IRQ_TYPE_LEVEL_LOW>;
+	};
 };
 
 &rockchip_suspend {
@@ -382,7 +409,17 @@
 	};
 };
 
-&vdd_0v75_s0 {
-	regulator-min-microvolt = <837500>;
-	regulator-max-microvolt = <837500>;
+&pinctrl {
+
+	hym8563 {
+		rtc_int: rtc-int {
+			rockchip,pins = <0 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	led {
+		led0_en: led0-en {
+			rockchip,pins = <3 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
 };
