@@ -678,7 +678,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
 	psy_cfg.drv_data = axp20x_batt;
 	psy_cfg.of_node = pdev->dev.of_node;
 
-	axp20x_batt->data = (struct axp_data *)of_device_get_match_data(dev);
+	axp20x_batt->data = (struct axp_data *)device_get_match_data(dev);
 
 	axp20x_batt->batt = devm_power_supply_register(&pdev->dev,
 						       &axp20x_batt_ps_desc,
