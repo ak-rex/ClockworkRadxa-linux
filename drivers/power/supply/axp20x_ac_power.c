@@ -13,7 +13,6 @@
 #include <linux/mfd/axp20x.h>
 #include <linux/module.h>
 #include <linux/of.h>
-#include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/pm.h>
 #include <linux/power_supply.h>
@@ -52,6 +51,9 @@ struct axp20x_ac_power {
 static irqreturn_t axp20x_ac_power_irq(int irq, void *devid)
 {
 	struct axp20x_ac_power *power = devid;
+
+	regmap_update_bits(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, 0x03, 0x00);
+	regmap_update_bits(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, 0x03, 0x03);
 
 	power_supply_changed(power->supply);
 
