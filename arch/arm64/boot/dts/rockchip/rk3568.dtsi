@@ -315,7 +315,7 @@
 	};
 };
 
-&gpu_opp_table {
+&gpu_opp_table_mali {
 	/* RK3568J gpu OPPs */
 	opp-j-600000000 {
 		opp-supported-hw = <0x04 0xffff>;

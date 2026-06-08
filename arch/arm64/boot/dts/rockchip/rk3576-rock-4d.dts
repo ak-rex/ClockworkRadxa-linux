@@ -22,6 +22,13 @@
 	model = "ROCK 4D";
 	compatible = "radxa,rock-4d", "rockchip,rk3576";
 
+	fan0: pwm-fan {
+		compatible = "pwm-fan";
+		#cooling-cells = <2>;
+		cooling-levels = <0 64 128 192 255>;
+		pwms = <&pwm2_8ch_5 0 60000 0>;
+	};
+
 	vcc_sys: vcc5v0-sys {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc_sys";
@@ -141,7 +148,7 @@
 	hdmi_sound: hdmi-sound {
 		compatible = "rockchip,hdmi";
 		rockchip,mclk-fs = <128>;
-		rockchip,card-name = "rockchip-hdmi";
+		rockchip,card-name = "rockchip-hdmi0";
 		rockchip,cpu = <&sai6>;
 		rockchip,codec = <&hdmi>;
 		rockchip,jack-det;
@@ -299,6 +306,18 @@
 	rockchip,regulator-on-before-mem = <&vdd_npu_s0>;
 };
 
+&vdd_logic_s0 {
+	regulator-state-mem {
+		regulator-on-in-suspend;
+	};
+};
+
+&vcca_1v8_s0 {
+	regulator-state-mem {
+		regulator-on-in-suspend;
+	};
+};
+
 &saradc {
 	status = "okay";
 	vref-supply = <&vcca_1v8_s0>;
@@ -306,6 +325,28 @@
 
 &tsadc {
 	status = "okay";
+};
+
+&threshold {
+	temperature = <60000>;
+};
+
+&little_core_thermal {
+	sustainable-power = <5000>; /* milliwatts */
+	cooling-maps {
+		map3 {
+			trip = <&target>;
+			cooling-device =
+				<&fan0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+			contribution = <8192>;
+		};
+		map4 {
+			trip = <&threshold>;
+			cooling-device =
+				<&fan0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+			contribution = <8192>;
+		};
+	};
 };
 
 &sdhci {
@@ -347,7 +388,6 @@
 	status = "okay";
 	cec-enable;
 	enable-gpios = <&gpio2 RK_PB0 GPIO_ACTIVE_HIGH>;
-	rockchip,sda-falling-delay-ns = <360>;
 };
 
 &hdmi_in_vp0 {
@@ -361,6 +401,24 @@
 &route_hdmi {
 	status = "okay";
 	connect = <&vp0_out_hdmi>;
+};
+
+&vp0 {
+	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER0 | 1 << ROCKCHIP_VOP2_ESMART0)>;
+	rockchip,primary-plane = <ROCKCHIP_VOP2_CLUSTER0>;
+	cursor-win-id = <ROCKCHIP_VOP2_ESMART0>;
+};
+
+&vp1 {
+	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER1 | 1 << ROCKCHIP_VOP2_ESMART1)>;
+	rockchip,primary-plane = <ROCKCHIP_VOP2_CLUSTER1>;
+	cursor-win-id = <ROCKCHIP_VOP2_ESMART1>;
+};
+
+&vp2 {
+	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_ESMART2 | 1 << ROCKCHIP_VOP2_ESMART3)>;
+	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART2>;
+	cursor-win-id = <ROCKCHIP_VOP2_ESMART3>;
 };
 
 &gmac0 {
@@ -568,5 +626,120 @@
 			rockchip,pins = <2 RK_PD1 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+};
+
+&gpio0 {
+	gpio-line-names =
+		/* GPIO0_A0-A3 */
+		"", "", "", "",
+		/* GPIO0_A4-A7 */
+		"", "", "", "",
+
+		/* GPIO0_B0-B3 */
+		"", "", "", "",
+		/* GPIO0_B4-B7 */
+		"", "", "", "",
+
+		/* GPIO0_C0-C3 */
+		"", "", "", "",
+		/* GPIO0_C4-C7 */
+		"", "", "", "",
+
+		/* GPIO0_D0-D3 */
+		"", "", "", "",
+		/* GPIO0_D4-D7 */
+		"PIN_8", "PIN_10", "", "";
+};
+
+&gpio1 {
+	gpio-line-names =
+		/* GPIO1_A0-A3 */
+		"", "", "", "",
+		/* GPIO1_A4-A7 */
+		"", "", "", "",
+
+		/* GPIO1_B0-B3 */
+		"", "", "", "",
+		/* GPIO1_B4-B7 */
+		"PIN_23", "PIN_19", "PIN_21", "PIN_24",
+
+		/* GPIO1_C0-C3 */
+		"PIN_26", "PIN_31", "PIN_33", "PIN_7",
+		/* GPIO1_C4-C7 */
+		"PIN_11", "PIN_15", "PIN_5", "PIN_3",
+
+		/* GPIO1_D0-D3 */
+		"PIN_40", "PIN_12", "PIN_35", "PIN_38",
+		/* GPIO1_D4-D7 */
+		"PIN_36", "PIN_32", "", "";
+};
+
+&gpio2 {
+	gpio-line-names =
+		/* GPIO2_A0-A3 */
+		"", "", "", "",
+		/* GPIO2_A4-A7 */
+		"", "", "", "",
+
+		/* GPIO2_B0-B3 */
+		"", "", "", "",
+		/* GPIO2_B4-B7 */
+		"", "", "PIN_16", "PIN_18",
+
+		/* GPIO2_C0-C3 */
+		"PIN_13", "", "", "",
+		/* GPIO2_C4-C7 */
+		"", "", "", "",
+
+		/* GPIO2_D0-D3 */
+		"", "", "", "",
+		/* GPIO2_D4-D7 */
+		"", "", "", "PIN_22";
+};
+
+&gpio3 {
+	gpio-line-names =
+		/* GPIO3_A0-A3 */
+		"", "", "PIN_29", "PIN_37",
+		/* GPIO3_A4-A7 */
+		"", "", "", "",
+
+		/* GPIO3_B0-B3 */
+		"", "", "", "",
+		/* GPIO3_B4-B7 */
+		"", "", "", "",
+
+		/* GPIO3_C0-C3 */
+		"", "", "", "",
+		/* GPIO3_C4-C7 */
+		"", "", "", "",
+
+		/* GPIO3_D0-D3 */
+		"", "", "", "",
+		/* GPIO3_D4-D7 */
+		"", "", "", "";
+};
+
+&gpio4 {
+	gpio-line-names =
+		/* GPIO4_A0-A3 */
+		"", "", "", "",
+		/* GPIO4_A4-A7 */
+		"", "", "", "",
+
+		/* GPIO4_B0-B3 */
+		"", "", "", "",
+		/* GPIO4_B4-B7 */
+		"", "", "", "",
+
+		/* GPIO4_C0-C3 */
+		"", "", "", "",
+		/* GPIO4_C4-C7 */
+		"", "", "PIN_28", "PIN_27",
+
+		/* GPIO4_D0-D3 */
+		"", "", "", "",
+		/* GPIO4_D4-D7 */
+		"", "", "", "";
 };
 

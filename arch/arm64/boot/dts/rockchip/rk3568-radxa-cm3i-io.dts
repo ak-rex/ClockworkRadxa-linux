@@ -7,6 +7,7 @@
 
 /dts-v1/;
 
+#include <dt-bindings/display/rockchip_vop.h>
 #include "rk3568-radxa-cm3i.dtsi"
 
 / {
@@ -50,18 +51,13 @@
 	};
 
 	hdmi_sound: hdmi-sound {
-		compatible = "simple-audio-card";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,mclk-fs = <128>;
-		simple-audio-card,name = "rockchip-hdmi0";
 		status = "okay";
-
-		simple-audio-card,cpu {
-			sound-dai = <&i2s0_8ch>;
-		};
-		simple-audio-card,codec {
-			sound-dai = <&hdmi>;
-		};
+		compatible = "rockchip,hdmi";
+		rockchip,mclk-fs = <128>;
+		rockchip,card-name = "rockchip-hdmi";
+		rockchip,cpu = <&i2s0_8ch>;
+		rockchip,codec = <&hdmi>;
+		rockchip,jack-det;
 	};
 };
 
@@ -123,6 +119,7 @@
 };
 
 &u2phy0_otg {
+	rockchip,dis-u2-susphy;
 	vbus-supply = <&vcc5v0_usb>;
 	status = "okay";
 };
@@ -207,7 +204,7 @@
 };
 
 &rk809_sound {
-	simple-audio-card,hp-det-gpio = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
+	hp-det-gpio = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&hp_det>;
 	status = "okay";
@@ -294,19 +291,30 @@
 	};
 };
 
+&uart0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_xfer>;
+};
+
 &uart5 {
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart5m1_xfer>;
+	linux,rs485-enabled-at-boot-time;
+	rs485-rts-active-low;
+	rs485-de-gpios = <&gpio3 RK_PC5 GPIO_ACTIVE_HIGH>;
 };
 
 &can1 {
-	status = "okay";
-	compatible = "rockchip,can-1.0";
-	assigned-clocks = <&cru CLK_CAN1>;
-	assigned-clock-rates = <200000000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&can1m0_pins>;
+	status = "disabled";
+};
+
+&vp0 {
+	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER0 | 1 << ROCKCHIP_VOP2_ESMART0 |
+				1 << ROCKCHIP_VOP2_SMART0)>;
+	rockchip,primary-plane = <ROCKCHIP_VOP2_CLUSTER0>;
+	cursor-win-id = <ROCKCHIP_VOP2_ESMART0>;
 };
 
 &pinctrl {
@@ -324,7 +332,7 @@
 
 	headphone {
 		hp_det: hp-det {
-			rockchip,pins = <3 RK_PA1 RK_FUNC_GPIO &pcfg_pull_up>;
+			rockchip,pins = <4 RK_PC4 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
 };

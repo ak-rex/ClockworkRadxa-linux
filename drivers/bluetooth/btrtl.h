@@ -103,6 +103,35 @@ struct rtl_vendor_cmd {
 	__u8 param[5];
 } __packed;
 
+enum {
+	REALTEK_ALT6_CONTINUOUS_TX_CHIP,
+
+	__REALTEK_NUM_FLAGS,
+};
+
+struct rtl_dump_info {
+	const char *driver_name;
+	char *controller;
+	u32  fw_version;
+};
+
+struct btrealtek_data {
+	DECLARE_BITMAP(flags, __REALTEK_NUM_FLAGS);
+
+	struct rtl_dump_info rtl_dump;
+};
+
+#define btrealtek_set_flag(hdev, nr)					\
+	do {								\
+		struct btrealtek_data *realtek = hci_get_priv((hdev));	\
+		set_bit((nr), realtek->flags);				\
+	} while (0)
+
+#define btrealtek_get_flag(hdev)					\
+	(((struct btrealtek_data *)hci_get_priv(hdev))->flags)
+
+#define btrealtek_test_flag(hdev, nr)	test_bit((nr), btrealtek_get_flag(hdev))
+
 #if IS_ENABLED(CONFIG_BT_RTL)
 
 struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev,
@@ -118,6 +147,7 @@ int btrtl_get_uart_settings(struct hci_dev *hdev,
 			    struct btrtl_device_info *btrtl_dev,
 			    unsigned int *controller_baudrate,
 			    u32 *device_baudrate, bool *flow_control);
+void btrtl_set_driver_name(struct hci_dev *hdev, const char *driver_name);
 
 #else
 
@@ -159,6 +189,10 @@ static inline int btrtl_get_uart_settings(struct hci_dev *hdev,
 					  bool *flow_control)
 {
 	return -ENOENT;
+}
+
+static inline void btrtl_set_driver_name(struct hci_dev *hdev, const char *driver_name)
+{
 }
 
 #endif

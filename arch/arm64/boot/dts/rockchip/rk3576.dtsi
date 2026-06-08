@@ -1404,14 +1404,13 @@
 			(0
 			| RKPM_SLP_ARMOFF_LOGOFF
 			| RKPM_SLP_PMU_PMUALIVE_32K
-			| RKPM_SLP_PMU_DIS_OSC
-			| RKPM_SLP_PMIC_LP
 			| RKPM_SLP_32K_EXT
 			)
 		>;
 		rockchip,wakeup-config = <
 			(0
 			| RKPM_GPIO_WKUP_EN
+			| RKPM_USB_WKUP_EN
 			)
 		>;
 		rockchip,sleep-io-ret-config = <
@@ -2167,6 +2166,7 @@
 		rockchip,temp-hysteresis = <5000>;
 		rockchip,low-temp = <15000>;
 		rockchip,low-temp-min-volt = <750000>;
+		rockchip,init-freq = <950000>;
 
 		opp-300000000 {
 			opp-supported-hw = <0xff 0xffff>;
